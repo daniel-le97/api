@@ -1,0 +1,12 @@
+//
+docker run -it --entrypoint /bin/sh api-app
+./main serve --http=0.0.0.0:8090
+
+
+// this is for local builds only - prefer using docker
+goreleaser release --snapshot --clean
+
+
+docker run -e PORT=8070 -p 8070:8070 api-app
+
+docker run -e PORT=8060 -p 8060:8060 api-app

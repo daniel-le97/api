@@ -1,21 +1,15 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-
+	"time"
 	// "fmt"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-
-	// "time"
-
 	"strings"
-
 	"github.com/pocketbase/dbx"
-
 	"github.com/joho/godotenv"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
@@ -24,19 +18,13 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/jsvm"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/hook"
-
 	"github.com/tursodatabase/go-libsql"
-	// _ "github.com/rqlite/gorqlite"
-	// _ "github.com/rqlite/gorqlite/stdlib"
-	// "github.com/tursodatabase/libsql-client-go/libsql"
-	// _ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 // register the libsql driver to use the same query builder
 // implementation as the already existing sqlite3 builder
 func init() {
 	dbx.BuilderFuncMap["libsql"] = dbx.BuilderFuncMap["sqlite3"]
-	// dbx.BuilderFuncMap["rqlite"] = dbx.BuilderFuncMap["sqlite3"]
 }
 
 func Open(driverName, dsn string) (*dbx.DB, error) {
@@ -50,15 +38,21 @@ func Open(driverName, dsn string) (*dbx.DB, error) {
 		return dbx.NewFromDB(db, driverName), nil
 	}
 	authToken := os.Getenv("TURSO_AUTH_TOKEN")
-	pinger, err := http.Get(primaryUrl + "/health")
+	toHTTP := strings.Replace(primaryUrl, "libsql", "http", 1)
+	_, err := http.Get(toHTTP + "/health")
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(pinger.StatusCode)
-	connector, err := libsql.NewEmbeddedReplicaConnector(dsn, primaryUrl, libsql.WithAuthToken(authToken))
+
+	syncInterval := time.Second
+	connector, err := libsql.NewEmbeddedReplicaConnector(dsn, primaryUrl,
+		libsql.WithAuthToken(authToken),
+		libsql.WithSyncInterval(syncInterval))
 	if err != nil {
 		return nil, err
 	}
+
+	connector.Sync()
 	sqlDB := sql.OpenDB(connector)
 	return dbx.NewFromDB(sqlDB, driverName), nil
 }
@@ -71,12 +65,9 @@ func main() {
 
 	app := pocketbase.NewWithConfig(pocketbase.Config{
 		DBConnect: func(dbPath string) (*dbx.DB, error) {
-
 			if strings.Contains(dbPath, "data.db") {
-				// return dbx.Open("libsql", "file:"+dbPath)
 				return Open("libsql", dbPath)
 			}
-
 			// optionally for the logs (aka. pb_data/auxiliary.db) use the default local filesystem driver
 			return core.DefaultDBConnect(dbPath)
 		},

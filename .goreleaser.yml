@@ -6,30 +6,29 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
 builds:
-  - id: goreleaser-zig-cross-compilation-linux-macos
-    goos:
-    - darwin
-    goarch:
-    - amd64
-    - arm64
-    ldflags:
-    - -s -w
-    flags:
-    - -trimpath
-    - -buildmode=pie
-    env:
-    - CGO_ENABLED=1
-    - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig c -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-        {{- end }}
-    - >-
-        {{- if eq .Os "darwin" }}
-          {{- if eq .Arch "amd64"}}CC=zig c++ -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
-        {{- end }}
-  
+  # - id: goreleaser-zig-cross-compilation-linux-macos
+  #   goos:
+  #   - darwin
+  #   goarch:
+  #   - amd64
+  #   - arm64
+  #   ldflags:
+  #   - -s -w
+  #   flags:
+  #   - -trimpath
+  #   - -buildmode=pie
+  #   env:
+  #   - CGO_ENABLED=1
+  #   - >-
+  #       {{- if eq .Os "darwin" }}
+  #         {{- if eq .Arch "amd64"}}CC=zig c -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+  #         {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+  #       {{- end }}
+  #   - >-
+  #       {{- if eq .Os "darwin" }}
+  #         {{- if eq .Arch "amd64"}}CC=zig c++ -target x86_64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+  #         {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-macos-none -F{{ .Env.SDK_PATH }}/System/Library/Frameworks{{- end }}
+  #       {{- end }}
   - id: goreleaser-zig-cross-compilation-linux
     goos:
     - linux
@@ -37,44 +36,45 @@ builds:
     - amd64
     - arm64
     ldflags:
-    - -s -w
+    - -s -w -extldflags "-ldl -lc -lunwind -static"
     flags:
     - -trimpath
     env:
     - CGO_ENABLED=1
     - >-
         {{- if eq .Os "linux" }}
-          {{- if eq .Arch "amd64" }}CC=zig c -target x86_64-linux-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-linux-musl{{- end }}
+          {{- if eq .Arch "amd64" }}CC=/home/daniel/code/api/zig cc -target x86_64-linux-gnu -isystem /usr/include{{- end }}
+          {{- if eq .Arch "arm64"}}CC=/home/daniel/code/api/zig cc -target aarch-64-linux-gnu -isystem /usr/include {{- end }}
         {{- end }}
     - >-
         {{- if eq .Os "linux" }}
-          {{- if eq .Arch "amd64" }}CC=zig c++ -target x86_64-linux-musl{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-linux-musl{{- end }}
+          {{- if eq .Arch "amd64" }}CC=/home/daniel/code/api/zig c++ -target x86_64-linux-gnu -isystem /usr/include{{- end }}
+          {{- if eq .Arch "arm64"}}CC=/home/daniel/code/api/zig c++ -target aarch64-linux-gnu -isystem /usr/include{{- end }}
         {{- end }}
 
-  - id: goreleaser-zig-cross-compilation-windows
-    goos:
-    - windows
-    goarch:
-    - amd64
-    - arm64
-    ldflags:
-    - -s -w
-    flags:
-    - -trimpath
-    env:
-    - CGO_ENABLED=1
-    - >-
-        {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64" }}CC=zig c -target x86_64-windows-gnu{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c -target aarch64-windows-gnu{{- end }}
-        {{- end }}
-    - >-
-        {{- if eq .Os "windows" }}
-          {{- if eq .Arch "amd64" }}CC=zig c++ -target x86_64-windows-gnu{{- end }}
-          {{- if eq .Arch "arm64"}}CC=zig c++ -target aarch64-windows-gnu{{- end }}
-        {{- end }}
+  # - id: goreleaser-zig-cross-compilation-windows
+  #   goos:
+  #   - windows
+  #   goarch:
+  #   - amd64
+  #   - arm64
+  #   ldflags:
+  #   - -s -w -extldflags "-lc -lunwind -static"
+  #   flags:
+  #   - -trimpath
+  #   env:
+  #   - CGO_FLAGS=I\home\daniel\projects\go\pkg\mod\github.com\tursodatabase\go-libsql@v0.0.0-20241113154718-293fe7f21b08
+  #   - CGO_ENABLED=1
+  #   - >-
+  #       {{- if eq .Os "windows" }}
+  #         {{- if eq .Arch "amd64" }}CC=/home/daniel/code/api/zig c -target x86_64-windows-gnu{{- end }}
+  #         {{- if eq .Arch "arm64"}}CC=/home/daniel/code/api/zig c -target aarch64-windows-gnu{{- end }}
+  #       {{- end }}
+  #   - >-
+  #       {{- if eq .Os "windows" }}
+  #         {{- if eq .Arch "amd64" }}CC=/home/daniel/code/api/zig c++ -target x86_64-windows-gnu{{- end }}
+  #         {{- if eq .Arch "arm64"}}CC=/home/daniel/code/api/zig c++ -target aarch64-windows-gnu{{- end }}
+  #       {{- end }}
 
 archives:
   - format: tar.gz

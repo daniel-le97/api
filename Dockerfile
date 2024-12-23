@@ -12,34 +12,35 @@ COPY go.mod go.sum ./
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# RUN apt-get update && apt-get install -y wget unzip xz-utils \
-#     && wget https://ziglang.org/download/0.13.0/zig-linux-aarch64-0.13.0.tar.xz \
-#     && tar -xf zig-linux-aarch64-0.13.0.tar.xz \
-#     && mv zig-linux-aarch64-0.13.0 /usr/local/zig \
-#     && ln -s /usr/local/zig/zig /usr/local/bin/zig \
-#     && rm zig-linux-aarch64-0.13.0.tar.xz
-RUN apt-get update && apt-get install -y libc6-dev clang
+ARG ZIG_VERSION=0.13.0
+# yes i know this says aarch64 but x86_64 version did not compile
+ARG ZIG_ARCH=aarch64
+
+RUN apt-get update && apt-get install -y wget unzip xz-utils \
+    && wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz \
+    && tar -xf zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz \
+    && mv zig-linux-${ZIG_ARCH}-${ZIG_VERSION} /usr/local/zig \
+    && ln -s /usr/local/zig/zig /usr/local/bin/zig \
+    && rm zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz
+# RUN apt-get update && apt-get install -y libc6-dev clang
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
 # Build the Go app
 ENV CGO_ENABLED=1
-# ENV CC="zig cc -target arm-linux-musleabihf"
-# ENV CXX="zig cc -target arm-linux-musleabihf"
-# ENV GOARCH=arm
-# ENV GOOS=linux 
+ENV CC="zig cc -target x86_64-linux-gnu -isystem /usr/include"
+ENV CXX="zig c++ -target x86_64-linux-gnu -isystem /usr/include"
+ENV GOARCH=amd64
+ENV GOOS=linux 
 # ENV OK=-ldflags '-extldflags "-ldl -lc -static"' 
-RUN go build -ldflags '-extldflags "-ldl -lc -static"' -o main main.go
-
-
+RUN go build -ldflags '-s -w -extldflags "-ldl -lc -lunwind -static"' -o main main.go
 
 # Start a new stage from scratch
-FROM alpine:latest
+FROM debian:bullseye-slim
 
-# RUN apk add --no-cache libc6-compat libgcc
+RUN apt-get update && apt-get install -y ca-certificates
 
-# Set the Current Working Directory inside the container
 WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage
@@ -47,14 +48,14 @@ COPY --from=builder /app/main ./
 COPY --from=builder /app/.env ./
 COPY --from=builder /app/pb_hooks ./pb_hooks
 COPY --from=builder /app/pb_migrations ./pb_migrations
-COPY --from=builder /app/pb_data ./pb_data/
+# COPY --from=builder /app/pb_data ./pb_data/
 COPY --from=builder /app/combined.json ./
 
-
-
-
-# Expose port 8080 to the outside world
+# Expose port 8090 to the outside world
 EXPOSE 8090
 
+# Set a default environment variable for the port
+ENV PORT=8090
+
 # Command to run the executable
-CMD ["./main", "serve",  "--http=0.0.0.0:8090"]
+CMD sh -c "./main serve --http=0.0.0.0:${PORT}"
