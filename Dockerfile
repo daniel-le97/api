@@ -13,8 +13,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 ARG ZIG_VERSION=0.13.0
-# yes i know this says aarch64 but x86_64 version did not compile
-ARG ZIG_ARCH=aarch64
+ARG ZIG_ARCH=x86_64
 
 RUN apt-get update && apt-get install -y wget unzip xz-utils \
     && wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz \
@@ -29,16 +28,15 @@ COPY . .
 
 # Build the Go app
 ENV CGO_ENABLED=1
-ENV CC="zig cc -target x86_64-linux-gnu -isystem /usr/include"
-ENV CXX="zig c++ -target x86_64-linux-gnu -isystem /usr/include"
+ENV CC="zig cc -target ${ZIG_ARCH}-linux-gnu -isystem /usr/include"
+ENV CXX="zig c++ -target ${ZIG_ARCH}-linux-gnu -isystem /usr/include"
 ENV GOARCH=amd64
 ENV GOOS=linux 
 # ENV OK=-ldflags '-extldflags "-ldl -lc -static"' 
-RUN go build -ldflags '-s -w -extldflags "-ldl -lc -lunwind -static"' -o main main.go
+RUN go build -ldflags '-s -w -extldflags "-lc -lunwind -static"' -o main main.go
 
 # Start a new stage from scratch
 FROM debian:bullseye-slim
-
 RUN apt-get update && apt-get install -y ca-certificates
 
 WORKDIR /root/

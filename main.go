@@ -52,7 +52,6 @@ func Open(driverName, dsn string) (*dbx.DB, error) {
 		return nil, err
 	}
 
-	connector.Sync()
 	sqlDB := sql.OpenDB(connector)
 	return dbx.NewFromDB(sqlDB, driverName), nil
 }
@@ -63,10 +62,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	// var db *dbx.DB
+
 	app := pocketbase.NewWithConfig(pocketbase.Config{
 		DBConnect: func(dbPath string) (*dbx.DB, error) {
 			if strings.Contains(dbPath, "data.db") {
-				return Open("libsql", dbPath)
+				return Open("sqlite3", dbPath)
 			}
 			// optionally for the logs (aka. pb_data/auxiliary.db) use the default local filesystem driver
 			return core.DefaultDBConnect(dbPath)
