@@ -1,0 +1,31 @@
+{
+  "name": "molecular-mass",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && rm -rf ./dist && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "size": "du -sh ./dist"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/preact": "^3.5.4",
+    "@astrojs/tailwind": "^5.1.2",
+    "@libsql/client": "^0.14.0",
+    "astro": "^4.16.13",
+    "pocketbase": "^0.22.0",
+    "preact": "^10.25.0",
+    "sharp": "^0.33.5",
+    "sweetalert2": "^11.14.5",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "autoprefixer": "^10.4.20",
+    "daisyui": "^4.12.14"
+  }
+}

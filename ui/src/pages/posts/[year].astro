@@ -1,0 +1,174 @@
+---
+import { getEntry } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import TablePreact from "../../components/TablePreact";
+// import ThemeController from "../../components/ThemeController.astro";
+
+interface Data {
+  date: string;
+  title: string;
+  magnet: string;
+  size: string;
+}
+type Collection = {
+  [key: string]: Data[];
+};
+export async function getStaticPaths() {
+  const collection = await getEntry('magnet', "combined");
+  const years: string[] = [];
+  let collectionData: Collection = {};
+  collection.data.forEach((entry) => {
+    let year = entry.date.split("-")[2];
+    // console.log(year);
+    if (!years.includes(year)) {
+      years.push(year);
+    }
+    if (!collectionData[year]) {
+      collectionData[year] = [];
+    }
+    collectionData[year].push(entry);
+  });
+  // console.log(years);
+  return years.map((year) => ({
+    params: { year },
+    props: { posts: collectionData[year] },
+  }));
+}
+
+const { year } = Astro.params;
+const  props = Astro.props;
+---
+
+<Layout title={"Welcome to thealexjonesshow.net"}>
+  <main class="px-4 md:px-8 lg:px-16 bg-base-300 py-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-center mb-4">
+      News from {year}
+    </h1>
+    <div class="overflow-x-auto bg-base-300 p-4 rounded-lg shadow-lg outline">
+      <TablePreact data={props.posts} year={year} client:load/>
+      <!-- <table class="table w-full">
+        <thead>
+          <tr class="bg-base-100">
+            <th class="p-2">#</th>
+            <th class="p-2">Date</th>
+            <th class="p-2">File Size</th>
+            <th class="p-2">Title</th>
+            <th class="p-2">Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            data.posts.map((post, index) => {
+              return (
+                <tr class="hover:bg-base-100">
+                  <th class="p-2">{index + 1}</th>
+                  <td class="p-2">{post.date}</td>
+                  <td class="p-2">{post.size}</td>
+                  <td class="p-2">{post.title}</td>
+                  <td class="p-2">
+                    <button
+                      class="btn btn-primary"
+                      data-magnet-link={post.magnet}
+                    >
+                      copy
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
+          }
+          <div
+            role="alert"
+            class="alert alert-success hidden fixed top-0 z-50 left-1/3 text-white p-4 m-5 rounded shadow-lg w-11/12 md:w-1/2 lg:w-1/3"
+            id="custom-alert"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Your purchase has been confirmed!</span>
+          </div>
+        </tbody>
+      </table> -->
+    </div>
+  </main>
+</Layout>
+<script>
+  import Swal from "sweetalert2";
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "center",
+    iconColor: "green",
+    customClass: {
+      popup: "colored-toast",
+    },
+    icon: "success",
+    showConfirmButton: false,
+    timer: 1500,
+    timerProgressBar: true,
+  });
+
+  function copyToClipboard(text: string) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showAlert("Copied to clipboard");
+        // Toast.fire({
+        //   icon: "success",
+        //   // title: "Copied to clipboard",
+        //   position: "top",
+        //   html: '<span class="bg-base-100">Copied</span>',
+        //   customClass: {
+        //     popup: "bg-base-300",
+        //     htmlContainer: "bg-base-300",
+        //     container: "bg-base-300",
+        //   },
+        // })
+        //   .then(() => {})
+        //   .catch((err) => {
+        //     console.error("Failed to copy: ", err);
+        //   });
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  }
+
+  function showAlert(message: string) {
+    const alert = document.getElementById("custom-alert")!;
+    alert.textContent = message;
+    alert.classList.remove("hidden");
+    setTimeout(() => {
+      alert.classList.add("hidden");
+    }, 1500);
+  }
+
+  document.querySelectorAll("[data-magnet-link]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const magnetLink = button.getAttribute("data-magnet-link");
+      if (!magnetLink) {
+        return;
+      }
+      copyToClipboard(magnetLink);
+    });
+  });
+</script>
+<style>
+  #custom-alert {
+    transition: opacity 0.5s ease-in-out;
+  }
+  #custom-alert.hidden {
+    opacity: 0;
+  }
+  #custom-alert:not(.hidden) {
+    opacity: 1;
+  }
+</style>

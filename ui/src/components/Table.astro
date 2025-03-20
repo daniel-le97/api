@@ -1,0 +1,95 @@
+---
+interface Props {
+    data: {
+        date: string;
+        title: string;
+        magnet: string;
+        size: string;
+    }[]
+}
+
+const { data } = Astro.props;
+---
+
+<table class="table w-full">
+    <!-- head -->
+    <thead>
+      <tr class="bg-base-100">
+        <th class="p-2">#</th>
+        <th class="p-2">Date</th>
+        <th class="p-2">File Size</th>
+        <th class="p-2">Title</th>
+        <th class="p-2">Link</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        data.map((post, index) => {
+          return (
+            <astro-heart
+              index={index + 1}
+              date={post.date}
+              title={post.title}
+              magnet={post.magnet}
+              size={post.size}
+            />
+            <tr class="hover:bg-base-100" data-magnet-link={post.magnet}>
+              <th class="p-2">{index + 1}</th>
+              <td class="p-2">{post.date}</td>
+              <td class="p-2">{post.size}</td>
+              <td class="p-2">{post.title}</td>
+              <td class="p-2">
+                <button class="btn btn-primary">copy</button>
+              </td>
+            </tr>
+          );
+        })
+      }
+      <script>
+        import Swal from "sweetalert2";
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "center",
+          iconColor: "green",
+          customClass: {
+            popup: "colored-toast",
+          },
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        });
+
+        function copyToClipboard(text:string) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              Toast.fire({
+                icon: "success",
+                title: "Copied to clipboard",
+                position: "top",
+              })
+                .then(() => {})
+                .catch((err) => {
+                  console.error("Failed to copy: ", err);
+                });
+            })
+            .catch((err) => {
+              console.error("Failed to copy: ", err);
+            });
+        }
+
+        document
+          .querySelectorAll("[data-magnet-link]")
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              const magnetLink = button.getAttribute("data-magnet-link");
+              if (!magnetLink) {
+                return;
+              }
+              copyToClipboard(magnetLink);
+            });
+          });
+      </script>
+    </tbody>
+  </table>

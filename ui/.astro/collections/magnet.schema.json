@@ -1,0 +1,33 @@
+{
+  "$ref": "#/definitions/magnet",
+  "definitions": {
+    "magnet": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "magnet": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "size",
+          "title",
+          "magnet"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
