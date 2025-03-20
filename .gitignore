@@ -181,3 +181,6 @@ data/*
 pb_data
 
 my-go-app-*
+
+.env
+

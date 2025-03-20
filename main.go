@@ -2,7 +2,7 @@ package main
 
 import (
 	"time"
-	// "fmt"
+	"fmt"
 	"database/sql"
 	"log"
 	"net/http"
@@ -29,15 +29,23 @@ func init() {
 
 func Open(driverName, dsn string) (*dbx.DB, error) {
 	primaryUrl := os.Getenv("TURSO_URL")
-	isLocal := strings.EqualFold(os.Getenv("TURSO_LOCAL"), "local")
-	if isLocal {
+	authToken := os.Getenv("TURSO_AUTH_TOKEN")
+	if strings.Contains(primaryUrl, "libsql") {
+		if authToken == "" {
+            return nil, fmt.Errorf("TURSO_AUTH_TOKEN must not be empty when TURSO_URL is from the turso platform")
+        }
+	}
+
+	// use sqlite driver when TURSO_URL is not set
+	if primaryUrl == "" {
 		db, err := sql.Open("libsql", "file:"+dsn)
 		if err != nil {
 			return nil, err
 		}
 		return dbx.NewFromDB(db, driverName), nil
 	}
-	authToken := os.Getenv("TURSO_AUTH_TOKEN")
+
+	// ensure TURSO_URL is reachable
 	toHTTP := strings.Replace(primaryUrl, "libsql", "http", 1)
 	_, err := http.Get(toHTTP + "/health")
 	if err != nil {
@@ -63,7 +71,6 @@ func main() {
 	}
 
 	// var db *dbx.DB
-
 	app := pocketbase.NewWithConfig(pocketbase.Config{
 		DBConnect: func(dbPath string) (*dbx.DB, error) {
 			if strings.Contains(dbPath, "data.db") {

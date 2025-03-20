@@ -32,6 +32,20 @@ services:
     #   - TURSO_URL=http://db:8080
     networks:
       - mynetwork
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    ports:
+      - "8070:8070"
+    depends_on:
+      db:
+        condition: service_healthy
+    # environment:
+    #   - TURSO_URL=http://db:8080
+    networks:
+      - mynetwork
 
 networks:
   mynetwork:

@@ -6,5 +6,21 @@
         "goja",
         "jsvm",
         "migratecmd"
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "172.93.48.2",
+            "port": 9002,
+            "driver": "MySQL",
+            "name": "books",
+            "username": "mysql",
+            "database": "books",
+            "askForPassword": true
+        }
     ]
 }

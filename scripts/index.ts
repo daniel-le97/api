@@ -1,5 +1,5 @@
 import PocketBase from "pocketbase";
-import data from "./hello.json";
+import data from "./data.json";
 import fs from "fs";
 
 // constants
