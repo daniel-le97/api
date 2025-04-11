@@ -51,7 +51,7 @@ check_and_create_dir
 build "linux" "amd64" "x86_64-linux-gnu"
 
 # Build for arm64
-build "linux" "arm64" "aarch64-linux-gnu"
+# build "linux" "arm64" "aarch64-linux-gnu"
 
 # build "darwin" "amd64" "x86_64-darwin"
 

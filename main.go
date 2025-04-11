@@ -70,6 +70,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	godotenv.Read()
+
 	// var db *dbx.DB
 	app := pocketbase.NewWithConfig(pocketbase.Config{
 		DBConnect: func(dbPath string) (*dbx.DB, error) {
@@ -80,6 +82,7 @@ func main() {
 			return core.DefaultDBConnect(dbPath)
 		},
 	})
+	
 
 	// ---------------------------------------------------------------
 	// Optional plugin flags:

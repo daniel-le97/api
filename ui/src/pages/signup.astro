@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.astro";
+import pb from "../lib/pocketbase";
+import Form from "../components/auth/Form";
+
+---
+
+<Layout title="Sign up" description="Create an account for Liberty Archive">
+   <div class="flex items-center justify-center min-h-screen">
+     <div class="card w-full max-w-sm shadow-2xl bg-base-100">
+       <div class="card-body">
+         <h2 class="card-title text-center justify-center w-full mb-4">Sign Up to Liberty Archive</h2>
+         <Form client:load />
+       </div>
+     </div>
+   </div>
+ </Layout>
